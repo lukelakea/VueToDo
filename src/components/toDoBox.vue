@@ -1,52 +1,25 @@
 <template>
   <div class="toDoBoxContainer">
-    <h1>To Do List:</h1>
-    <input v-model="newEntry" @keyup.enter="addEntry">
+    <h1>To Do List</h1>
+    <!-- Box to add new entries  -->
+    <input v-model="newentry" @keyup.enter="addEntry">
+    <!-- List of existing entries  -->
     <ul>
         <li v-for="(entry,index) in entries" 
         :key="index">
-        <template  v-if="entry.taskCompleteStatus === filterChoice">
-          <div 
-          class="entryCompleteStatus" 
-          @click="completeTask(entry)"
-          >
-          {{entry.taskCompleteStatus}}   
-      </div>
-      <input 
-      v-if = "entry.edit" v-model = "entry.text"
-      @blur= "entry.edit = false; $emit('update')"
-      @keyup.enter = "entry.edit = false; $emit('update')"
-      class="entryText" >
-      <div v-else>
-        <label :class="[entry.taskCompleteStatus ==='🔵' ? 'styleA' : 'styleB']" @click = "entry.edit = true;">{{entry.text}}</label>  
-    </div>
-    <div 
-    class="entryDelete"
-    @click="deleteTask(index)">❌</div>
-</template>
 
-<template  v-if="filterChoice === ''">
-  <div 
-  class="entryCompleteStatus" 
-  @click="completeTask(entry)"
-  >
-  {{entry.taskCompleteStatus}}   
-</div>
-<input 
-v-if = "entry.edit" v-model = "entry.text"
-@blur= "entry.edit = false; $emit('update')"
-@keyup.enter = "entry.edit = false; $emit('update')"
-class="entryText" >
-<div v-else>
-    <label :class="[entry.taskCompleteStatus ==='🔵' ? 'styleA' : 'styleB']" @click = "entry.edit = true;">{{entry.text}}</label>  
-</div>
-<div 
-class="entryDelete"
-@click="deleteTask(index)">❌</div>
-</template>
+        <!-- If filter is applied, show the ones that qualify  -->
+        <template  v-if="entry.entryCompleteStatus === filterChoice">
+        <ItemEntry :entries="entries" :entry="entry" :index="index"></ItemEntry>
+        </template>
 
-</li>
-</ul>
+        <!-- Default, no filter applied-->
+        <template  v-if="filterChoice === ''">
+          <ItemEntry :entries="entries" :entry="entry" :index="index"></ItemEntry>
+        </template>
+        </li>
+    </ul>
+<!-- Buttons -->
 <button @click="noFilter">All</button>
 <button @click="uncompletedFilter">Active</button>
 <button @click="completedFilter">Completed</button>
@@ -56,53 +29,49 @@ class="entryDelete"
 
 
 <script>
+
+    import ItemEntry from './Entry.vue'
+
     export default{
+        components: {
+          ItemEntry
+        },
         props: {
             entries: Array
         },
         data() {
           return{
             filterChoice: '',
-            newEntry: ''
+            newentry: ''
         }
     },
     methods: {
+      //Add entry to the list  
       addEntry: function() {
-        if  (this.newEntry.length!=0){
+        if  (this.newentry.length!=0){
             this.entries.push({
-                taskCompleteStatus: '🔵',
-                text: this.newEntry,
+                entryCompleteStatus: '🔵',
+                text: this.newentry,
                 edit: false})
-            this.newEntry = ''
+            this.newentry = ''
         }   
     },
-    editTask: function(entry){
-        this.entry = entry;
-    },
-    completeTask: function(entry) {
-        if(entry.taskCompleteStatus==='🔵'){
-            entry.taskCompleteStatus = '✅'}
-            else{
-                entry.taskCompleteStatus = '🔵'
-            }
-        },
-        deleteTask: function(index){
-            console.log(index)
-            this.entries.splice(index, 1)
-        },
+        //Default, displaying all entries
         noFilter(){
             this.filterChoice = ''
         },
+        //Show only active entries
         uncompletedFilter(){
             this.filterChoice = '🔵'
         },
+        //Show only complete entries
         completedFilter(){
             this.filterChoice = '✅'
         },
+        //Clear completed entries from list
         clearCompleted(entries){
             for(var k = 0; k < this.entries.length;){
-                console.log(entries[k].taskCompleteStatus)
-                if(entries[k].taskCompleteStatus==='✅'){
+                if(entries[k].entryCompleteStatus==='✅'){
                     this.entries.splice(k, 1)
                     if(k!=0){
                         k--}
@@ -111,9 +80,6 @@ class="entryDelete"
                         k++
                     }
                 }
-            },
-            log(item){
-                console.log(item)
             }
         }
     }
